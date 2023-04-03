@@ -39,6 +39,7 @@ PEFT_TYPE_TO_CONFIG_MAPPING = {
 }
 
 TRANSFORMERS_MODELS_TO_LORA_TARGET_MODULES_MAPPING = {
+    "longt5": ["q", "v"],
     "t5": ["q", "v"],
     "mt5": ["q", "v"],
     "bart": ["q_proj", "v_proj"],
