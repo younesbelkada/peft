@@ -411,8 +411,8 @@ class LoraModel(torch.nn.Module):
         This method merges the LoRa layers into the base model. This is needed if someone wants to use the base model
         as a standalone model.
         """
-        if getattr(self.config, "model_type", None) == "gpt2":
-            raise ValueError("GPT2 models are not supported for merging LORA layers")
+        # if getattr(self.config, "model_type", None) == "gpt2":
+        #    raise ValueError("GPT2 models are not supported for merging LORA layers")
 
         if getattr(self.model, "is_loaded_in_8bit", False) or getattr(self.model, "is_loaded_in_4bit", False):
             raise ValueError("Cannot merge LORA layers when the model is loaded in 8-bit mode")
@@ -437,7 +437,10 @@ class LoraModel(torch.nn.Module):
                     )
                 else:
                     bias = target.bias is not None
-                    new_module = torch.nn.Linear(target.in_features, target.out_features, bias=bias)
+                    if isinstance(parent, nn.Conv1d):
+                        pass
+                    else:
+                        new_module = torch.nn.Linear(target.in_features, target.out_features, bias=bias)
                 target.merge()
                 self._replace_module(parent, target_name, new_module, target)
 
