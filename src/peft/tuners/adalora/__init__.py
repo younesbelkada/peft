@@ -12,24 +12,73 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import TYPE_CHECKING
+from ...import_utils import _LazyModule, OptionalDependencyNotAvailable
+from peft.import_utils import is_bnb_4bit_available, is_bnb_available, is_auto_gptq_available
 
-from peft.import_utils import is_bnb_4bit_available, is_bnb_available
+_import_structure = {
+    "config": ["AdaLoraConfig"],
+    "layer": ["AdaLoraLayer", "RankAllocator", "SVDLinear"],
+    "model": ["AdaLoraModel"],
+}
 
-from .config import AdaLoraConfig
-from .gptq import SVDQuantLinear
-from .layer import AdaLoraLayer, RankAllocator, SVDLinear
-from .model import AdaLoraModel
+try:
+    if not is_bnb_available():
+        raise OptionalDependencyNotAvailable()
+except OptionalDependencyNotAvailable:
+    pass
+else:
+    _import_structure["bnb"] = ["SVDLinear8bitLt"]
+
+try:
+    if not is_bnb_4bit_available():
+        raise OptionalDependencyNotAvailable()
+except OptionalDependencyNotAvailable:
+    pass
+else:
+    _import_structure["bnb"] = ["SVDLinear4bit"]
+
+try:
+    if not is_auto_gptq_available():
+        raise OptionalDependencyNotAvailable()
+except OptionalDependencyNotAvailable:
+    pass
+else:
+    _import_structure["gptq"] = ["SVDQuantLinear"]
 
 
-__all__ = ["AdaLoraConfig", "AdaLoraLayer", "AdaLoraModel", "SVDLinear", "RankAllocator", "SVDQuantLinear"]
+
+if TYPE_CHECKING:
+    from .config import AdaLoraConfig
+    from .layer import AdaLoraLayer, RankAllocator, SVDLinear
+    from .model import AdaLoraModel
 
 
-if is_bnb_available():
-    from .bnb import SVDLinear8bitLt
+    try:
+        if not is_auto_gptq_available():
+            raise OptionalDependencyNotAvailable()
+    except OptionalDependencyNotAvailable:
+        pass
+    else:
+        from .gptq import SVDQuantLinear
 
-    __all__ += ["SVDLinear8bitLt"]
 
-if is_bnb_4bit_available():
-    from .bnb import SVDLinear4bit
+    try:
+        if not is_bnb_available():
+            raise OptionalDependencyNotAvailable()
+    except OptionalDependencyNotAvailable:
+        pass
+    else:
+        from .bnb import SVDLinear8bitLt
 
-    __all__ += ["SVDLinear4bit"]
+    try:
+        if not is_bnb_4bit_available():
+            raise OptionalDependencyNotAvailable()
+    except OptionalDependencyNotAvailable:
+        pass
+    else:
+        from .bnb import SVDLinear4bit
+else:
+    import sys
+
+    sys.modules[__name__] = _LazyModule(__name__, globals()["__file__"], _import_structure, module_spec=__spec__)

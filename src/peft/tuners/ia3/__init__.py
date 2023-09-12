@@ -12,18 +12,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from typing import TYPE_CHECKING
+from ...import_utils import _LazyModule, OptionalDependencyNotAvailable
 from peft.import_utils import is_bnb_available
 
-from .config import IA3Config
-from .layer import IA3Layer, Linear
-from .model import IA3Model
+_import_structure = {
+    "config": ["IA3Config"],
+    "layer": ["IA3Layer", "Linear"],
+    "model": ["IA3Model"],
+}
 
+try:
+    if not is_bnb_available():
+        raise OptionalDependencyNotAvailable()
+except OptionalDependencyNotAvailable:
+    pass
+else:
+    _import_structure["bnb"] = ["Linear8bitLt"]
 
-__all__ = ["IA3Config", "IA3Layer", "IA3Model", "Linear"]
+if TYPE_CHECKING:
+    from .config import IA3Config
+    from .layer import IA3Layer, Linear
+    from .model import IA3Model
+else:
+    import sys
 
-
-if is_bnb_available():
-    from .bnb import Linear8bitLt
-
-    __all__ += ["Linear8bitLt"]
+    sys.modules[__name__] = _LazyModule(__name__, globals()["__file__"], _import_structure)

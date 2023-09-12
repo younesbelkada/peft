@@ -12,9 +12,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import TYPE_CHECKING
+from ...import_utils import _LazyModule
 
-from .config import PromptEncoderConfig, PromptEncoderReparameterizationType
-from .model import PromptEncoder
+_import_structure = {
+    "config": ["PromptEncoderConfig", "PromptEncoderReparameterizationType"],
+    "model": ["PromptEncoder"],
+}
 
+if TYPE_CHECKING:
+    from .config import PromptEncoderConfig, PromptEncoderReparameterizationType
+    from .model import PromptEncoder
+else:
+    import sys
 
-__all__ = ["PromptEncoder", "PromptEncoderConfig", "PromptEncoderReparameterizationType"]
+    sys.modules[__name__] = _LazyModule(__name__, globals()["__file__"], _import_structure, module_spec=__spec__)
