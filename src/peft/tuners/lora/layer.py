@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import math
-import warnings
+import warnings, logging
 from typing import Optional, Tuple, Union
 
 import torch
@@ -209,9 +209,26 @@ class Linear(nn.Linear, LoraLayer):
             self.merged = False
 
     def get_delta_weight(self, adapter) -> torch.Tensor:
+        lora_B_w = self.lora_B[adapter].weight
+        lora_A_w = self.lora_A[adapter].weight
+
+        if lora_B_w.dtype == torch.float16 and lora_B_w.device.type == "cpu":
+            # to avoid RuntimeError: "addmm_impl_cpu_" not implemented for 'Half' issues
+            lora_B_w = lora_B_w.float()
+            warnings.warn(
+                "Converting LoRA weight to float32 for as the weight is in float16 and the device is CPU."
+            )
+        
+        if lora_A_w.dtype == torch.float16 and lora_B_w.device.type == "cpu":
+            # to avoid RuntimeError: "addmm_impl_cpu_" not implemented for 'Half' issues
+            lora_A_w = lora_A_w.float()
+            warnings.warn(
+                "Converting LoRA weight to float32 for as the weight is in float16 and the device is CPU."
+            )
+
         return (
             transpose(
-                self.lora_B[adapter].weight @ self.lora_A[adapter].weight,
+                lora_B_w @ lora_A_w,
                 self.fan_in_fan_out,
             )
             * self.scaling[adapter]
